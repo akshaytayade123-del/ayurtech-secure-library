@@ -217,12 +217,15 @@ async function changeApproval(id,approved){
    return;
  }
 
- const {error}=await db.rpc(
-  "ayurtech_set_student_approval",{
-   p_student_id:id,
-   p_approved:approved
+ const {error}=await db.rpc
+const { data, error } = await db.rpc(
+  "ayurtech_set_student_approval",
+  {
+    target_user_id: studentId,
+    new_approval: true
   }
- );
+);
+ 
 
  if(error){
   message("Approval failed: "+error.message+
