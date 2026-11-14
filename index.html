@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,32 +7,31 @@
 <title>AYURTECH Secure Library</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;
-background:#08162b;color:#fff}
-header{padding:22px;text-align:center;
-background:#102b50;border-bottom:2px solid #d5ad56}
-header h1{font-size:23px;margin:0;color:#f3cf78}
-header p{margin:8px 0 0;color:#cbd5e1}
-main{max-width:520px;margin:35px auto;padding:16px}
-.card{background:#142743;border:1px solid #345071;
-border-radius:16px;padding:24px;margin-bottom:18px}
-h2{margin-top:0;font-size:21px}
-input{width:100%;padding:14px;margin:9px 0;
-border:1px solid #66809d;border-radius:8px;
-background:#fff;color:#111;font-size:16px}
-button{padding:13px 16px;border:0;border-radius:8px;
-background:#d5ad56;color:#101827;font-weight:bold;
-cursor:pointer;margin:6px 5px 6px 0}
-button:disabled{opacity:.5;cursor:not-allowed}
-.secondary{background:#345071;color:white}
-.danger{background:#d95b5b;color:white}
-.hidden{display:none}
-.notice{padding:12px;border-radius:8px;
-background:#243b5b;margin:12px 0;overflow-wrap:anywhere}
-.student{padding:14px;border:1px solid #45617f;
-border-radius:10px;margin:12px 0}
-.small{font-size:13px;color:#cbd5e1}
-footer{text-align:center;color:#aabbd0;padding:25px}
+body{margin:0;background:#07162b;color:#fff;font-family:Arial,sans-serif}
+header{background:#112e53;text-align:center;padding:26px 12px;border-bottom:3px solid #d6ad55}
+h1{color:#e6bd69;font-size:25px;margin:0 0 12px}
+h2{margin-top:0}
+header p{color:#cbd6e7;margin:0}
+main{max-width:800px;margin:35px auto;padding:15px}
+.card{background:#152b48;border:1px solid #3c5778;border-radius:18px;padding:23px;margin-bottom:20px}
+input{width:100%;padding:15px;margin:9px 0;border-radius:9px;border:1px solid #7e97b5;font-size:16px}
+button{background:#d6ad55;color:#14243b;border:0;border-radius:9px;padding:13px 17px;margin:6px 5px 6px 0;font-weight:bold;font-size:15px;cursor:pointer}
+button.secondary{background:#355374;color:white}
+button.danger{background:#d75b60;color:white}
+button:disabled{opacity:.5}
+.hidden{display:none!important}
+.small{color:#c3d1e2;font-size:14px}
+.status{background:#284362;padding:15px;border-radius:10px;margin:15px 0;overflow-wrap:anywhere}
+.file{border:1px solid #405b7d;padding:15px;border-radius:12px;margin:12px 0}
+.file strong{display:block;overflow-wrap:anywhere}
+#viewer{position:fixed;inset:0;background:#07162b;z-index:20;overflow:auto}
+.toolbar{position:sticky;top:0;background:#152b48;padding:10px;z-index:5;text-align:center}
+#pages{padding:12px;max-width:900px;margin:auto}
+.page{position:relative;margin:12px auto;width:fit-content;max-width:100%}
+.page canvas{display:block;max-width:100%;height:auto}
+.watermark{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.watermark span{transform:rotate(-32deg);color:rgba(100,35,35,.24);font-weight:bold;font-size:clamp(14px,3vw,24px);text-align:center;overflow-wrap:anywhere;max-width:85%}
+footer{text-align:center;color:#9aacc5;padding:35px 10px}
 </style>
 </head>
 <body>
@@ -46,13 +46,10 @@ footer{text-align:center;color:#aabbd0;padding:25px}
 <h2>Secure Login</h2>
 <p>For AYURTECH Admin and Registered Students</p>
 <form id="loginForm">
-<input id="email" type="email"
-placeholder="Email address" autocomplete="email" required>
-<input id="password" type="password"
-placeholder="Password" autocomplete="current-password" required>
-<button id="loginButton" type="submit">Login</button>
+<input id="email" type="email" placeholder="Email address" required>
+<input id="password" type="password" placeholder="Password" required>
+<button type="submit">Login</button>
 </form>
-<div id="loginMessage" class="notice hidden"></div>
 <p class="small">Only approved students can access the library.</p>
 </section>
 
@@ -67,23 +64,36 @@ placeholder="Password" autocomplete="current-password" required>
 <h2>Admin Dashboard</h2>
 <p>Student Approval Management</p>
 <button onclick="loadStudents()">Refresh Students</button>
+<button class="secondary" onclick="loadFiles()">Refresh PDFs</button>
 <button class="secondary" onclick="logout()">Logout</button>
-<div id="studentList"></div>
+<h3>Students</h3>
+<div id="students"></div>
+<h3>Upload PDF</h3>
+<input id="uploadFile" type="file" accept=".pdf,application/pdf">
+<button onclick="uploadPDF()">Upload PDF</button>
+<h3>PDF Library</h3>
+<div id="adminFiles"></div>
 </section>
 
 <section id="studentPanel" class="card hidden">
 <h2>Student Library</h2>
 <p>Welcome to AYURTECH Secure Library.</p>
-<div class="notice">
-Your account is approved.
-Private PDF viewing will be added next.
-</div>
+<p class="small">Your account is approved.</p>
+<button onclick="loadFiles()">Refresh PDFs</button>
 <button class="secondary" onclick="logout()">Logout</button>
+<div id="studentFiles"></div>
 </section>
 
-<div id="status" class="notice hidden"
-role="status" aria-live="polite"></div>
+<div id="status" class="status hidden" role="status" aria-live="polite"></div>
 </main>
+
+<section id="viewer" class="hidden">
+<div class="toolbar">
+<button onclick="closeViewer()">Close PDF</button>
+<span id="viewerTitle"></span>
+</div>
+<div id="pages"></div>
+</section>
 
 <footer>Prepared by AYURTECH GUIDENCE CELL</footer>
 
@@ -91,153 +101,456 @@ role="status" aria-live="polite"></div>
 import {createClient} from
 "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+import * as pdfjs from
+"https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs";
+
+pdfjs.GlobalWorkerOptions.workerSrc =
+"https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs";
+
 const URL="https://jftrsedbbbnudioxqjpy.supabase.co";
 const KEY="sb_publishable_4f7dC6tci0ewD0JHsrNjDQ_pg44uhYV";
-const db=createClient(URL,KEY);
+const BUCKET="Ayurtech-pdfs";
 
+const db=createClient(URL,KEY);
 const $=id=>document.getElementById(id);
-let currentUser=null;
+
+let user=null;
+let profile=null;
+let currentPdf=null;
+let viewerGeneration=0;
 
 function show(panel){
- ["loginPanel","pendingPanel","adminPanel","studentPanel"]
- .forEach(id=>$(id).classList.add("hidden"));
- $(panel).classList.remove("hidden");
+["loginPanel","pendingPanel","adminPanel","studentPanel"]
+.forEach(id=>$(id).classList.add("hidden"));
+$(panel).classList.remove("hidden");
 }
 
 function message(text){
- $("status").textContent=text;
- $("status").classList.remove("hidden");
+$("status").textContent=text;
+$("status").classList.remove("hidden");
+}
+
+function clearMessage(){
+$("status").classList.add("hidden");
+}
+
+function errorText(error){
+return error?.message||String(error);
+}
+
+function fileName(name){
+return name.replace(/\.pdf$/i,"")
+.replace(/[_-]/g," ");
+}
+
+async function login(event){
+event.preventDefault();
+clearMessage();
+
+const email=$("email").value.trim();
+const password=$("password").value;
+
+const {error}=await db.auth.signInWithPassword({
+email,password
+});
+
+if(error){
+message("Login failed: "+errorText(error));
+return;
+}
+
+await loadProfile();
 }
 
 async function loadProfile(){
- const {data:{user},error:userError}=await db.auth.getUser();
- if(userError || !user){
-   currentUser=null;
-   show("loginPanel");
-   return;
- }
- currentUser=user;
+clearMessage();
 
- const {data:p,error}=await db.from("profiles")
- .select("role,approved")
- .eq("id",user.id).single();
+const {data:{user:activeUser},error:authError}
+=await db.auth.getUser();
 
- if(error || !p){
-   show("pendingPanel");
-   message("Profile could not be verified. Contact admin.");
-   return;
- }
-
- if(p.role==="admin" && p.approved===true){
-   show("adminPanel");
-   await loadStudents();
- }else if(p.role==="student" && p.approved===true){
-   show("studentPanel");
- }else{
-   show("pendingPanel");
- }
+if(authError||!activeUser){
+user=null;
+profile=null;
+show("loginPanel");
+return;
 }
 
-$("loginForm").addEventListener("submit",async e=>{
- e.preventDefault();
- $("loginButton").disabled=true;
- $("loginMessage").classList.add("hidden");
+user=activeUser;
 
- const {error}=await db.auth.signInWithPassword({
-  email:$("email").value.trim(),
-  password:$("password").value
- });
+const {data,error}=await db
+.from("profiles")
+.select("id,role,approved")
+.eq("id",user.id)
+.single();
 
- $("loginButton").disabled=false;
- if(error){
-   $("loginMessage").textContent=error.message;
-   $("loginMessage").classList.remove("hidden");
-   return;
- }
- $("password").value="";
- await loadProfile();
-});
+if(error||!data){
+profile=null;
+show("pendingPanel");
+message("Profile could not be verified: "+
+(error?errorText(error):"Profile missing"));
+return;
+}
+
+profile=data;
+
+if(profile.role==="admin"){
+show("adminPanel");
+await loadStudents();
+await loadFiles();
+return;
+}
+
+if(profile.role==="student"&&profile.approved===true){
+show("studentPanel");
+await loadFiles();
+return;
+}
+
+show("pendingPanel");
+}
 
 async function logout(){
- await db.auth.signOut();
- currentUser=null;
- show("loginPanel");
- $("status").classList.add("hidden");
+closeViewer();
+await db.auth.signOut();
+user=null;
+profile=null;
+show("loginPanel");
+clearMessage();
+$("password").value="";
 }
-window.logout=logout;
 
 async function loadStudents(){
- const {data,error}=await db.from("profiles")
- .select("id,role,approved")
- .eq("role","student")
- .order("id");
+if(profile?.role!=="admin")return;
 
- const list=$("studentList");
- list.replaceChildren();
+const list=$("students");
+list.replaceChildren();
 
- if(error){
-  message("Unable to load students: "+error.message);
-  return;
- }
+const {data,error}=await db
+.from("profiles")
+.select("id,role,approved")
+.eq("role","student")
+.order("id");
 
- if(!data || data.length===0){
-  list.textContent="No students found.";
-  return;
- }
-
- for(const student of data){
-  const card=document.createElement("div");
-  card.className="student";
-
-  const label=document.createElement("p");
-  label.textContent="Student ID: "+student.id;
-
-  const state=document.createElement("p");
-  state.textContent=student.approved?
-   "Status: Approved":"Status: Pending";
-
-  const button=document.createElement("button");
-  button.textContent=student.approved?
-   "Revoke Access":"Approve Student";
-  if(student.approved)button.className="danger";
-
-  button.onclick=()=>changeApproval(
-   student.id,!student.approved
-  );
-
-  card.append(label,state,button);
-  list.appendChild(card);
- }
+if(error){
+message("Student list failed: "+errorText(error));
+return;
 }
+
+if(!data?.length){
+list.textContent="No students found.";
+return;
+}
+
+for(const student of data){
+const card=document.createElement("div");
+card.className="file";
+
+const id=document.createElement("p");
+id.textContent="Student ID: "+student.id;
+
+const state=document.createElement("p");
+state.textContent=student.approved?
+"Status: Approved":"Status: Pending";
+
+const button=document.createElement("button");
+button.textContent=student.approved?
+"Revoke Access":"Approve Student";
+
+if(student.approved)button.className="danger";
+
+button.onclick=()=>changeApproval(
+student.id,!student.approved
+);
+
+card.append(id,state,button);
+list.appendChild(card);
+}
+}
+
+async function changeApproval(id,approved){
+if(profile?.role!=="admin")return;
+
+const confirmed=confirm(approved?
+"Approve this student?":
+"Revoke this student's access?");
+
+if(!confirmed)return;
+
+const {error}=await db.rpc(
+"ayurtech_set_student_approval",
+{
+target_user_id:id,
+new_approval:approved
+}
+);
+
+if(error){
+message("Approval failed: "+errorText(error));
+return;
+}
+
+message("Student access updated.");
+await loadStudents();
+}
+
+async function loadFiles(){
+if(!profile||(
+profile.role!=="admin"&&
+!(profile.role==="student"&&profile.approved===true)
+))return;
+
+const target=profile.role==="admin"?
+$("adminFiles"):$("studentFiles");
+
+target.textContent="Loading PDFs...";
+
+const {data,error}=await db.storage
+.from(BUCKET)
+.list("",{
+limit:100,
+offset:0,
+sortBy:{column:"name",order:"asc"}
+});
+
+if(error){
+target.textContent="";
+message("PDF listing failed: "+errorText(error));
+return;
+}
+
+target.replaceChildren();
+
+const files=(data||[]).filter(
+f=>f.name.toLowerCase().endsWith(".pdf")
+);
+
+if(!files.length){
+target.textContent="No PDF files found.";
+return;
+}
+
+for(const file of files){
+const card=document.createElement("div");
+card.className="file";
+
+const title=document.createElement("strong");
+title.textContent=fileName(file.name);
+
+const open=document.createElement("button");
+open.textContent="View PDF";
+open.onclick=()=>openPDF(file.name);
+
+card.append(title,open);
+
+if(profile.role==="admin"){
+const del=document.createElement("button");
+del.className="danger";
+del.textContent="Delete";
+del.onclick=()=>deletePDF(file.name);
+card.appendChild(del);
+}
+
+target.appendChild(card);
+}
+}
+
+async function uploadPDF(){
+if(profile?.role!=="admin")return;
+
+const file=$("uploadFile").files[0];
+
+if(!file){
+message("Please select a PDF.");
+return;
+}
+
+if(!file.name.toLowerCase().endsWith(".pdf")){
+message("Only PDF files are allowed.");
+return;
+}
+
+if(file.size>20*1024*1024){
+message("Please choose a PDF smaller than 20 MB.");
+return;
+}
+
+message("Uploading PDF...");
+
+const path=Date.now()+"-"+file.name
+.replace(/[^a-zA-Z0-9._-]/g,"_");
+
+const {error}=await db.storage
+.from(BUCKET)
+.upload(path,file,{
+contentType:"application/pdf",
+upsert:false
+});
+
+if(error){
+message("Upload failed: "+errorText(error));
+return;
+}
+
+$("uploadFile").value="";
+message("PDF uploaded successfully.");
+await loadFiles();
+}
+
+async function deletePDF(path){
+if(profile?.role!=="admin")return;
+
+if(!confirm("Delete "+path+"?"))return;
+
+const {error}=await db.storage
+.from(BUCKET)
+.remove([path]);
+
+if(error){
+message("Delete failed: "+errorText(error));
+return;
+}
+
+message("PDF deleted.");
+await loadFiles();
+}
+
+async function openPDF(path){
+if(!user||!profile)return;
+
+const generation=++viewerGeneration;
+message("Opening PDF...");
+
+const {data:latest,error:profileError}=await db
+.from("profiles")
+.select("role,approved")
+.eq("id",user.id)
+.single();
+
+if(profileError||!latest||
+!(latest.role==="admin"||
+(latest.role==="student"&&latest.approved===true))){
+closeViewer();
+message("Access denied. Contact administration.");
+await loadProfile();
+return;
+}
+
+profile={...profile,...latest};
+
+const {data,error}=await db.storage
+.from(BUCKET)
+.download(path);
+
+if(generation!==viewerGeneration)return;
+
+if(error){
+message("PDF access failed: "+errorText(error));
+return;
+}
+
+let bytes;
+try{
+bytes=new Uint8Array(await data.arrayBuffer());
+}catch(e){
+message("Unable to read PDF: "+errorText(e));
+return;
+}
+
+if(generation!==viewerGeneration)return;
+
+$("viewerTitle").textContent=fileName(path);
+$("pages").replaceChildren();
+$("viewer").classList.remove("hidden");
+document.body.style.overflow="hidden";
+clearMessage();
+
+try{
+currentPdf=await pdfjs.getDocument({data:bytes}).promise;
+
+const mark="AYURTECH GUIDENCE CELL | "+user.email;
+
+for(let n=1;n<=currentPdf.numPages;n++){
+if(generation!==viewerGeneration)return;
+
+const page=await currentPdf.getPage(n);
+const base=page.getViewport({scale:1});
+
+const availableWidth=Math.min(
+window.innerWidth-24,850
+);
+
+const scale=Math.min(2,availableWidth/base.width);
+const viewport=page.getViewport({scale});
+
+const wrapper=document.createElement("div");
+wrapper.className="page";
+
+const canvas=document.createElement("canvas");
+const context=canvas.getContext("2d");
+
+canvas.width=Math.floor(viewport.width);
+canvas.height=Math.floor(viewport.height);
+
+wrapper.appendChild(canvas);
+
+const watermark=document.createElement("div");
+watermark.className="watermark";
+
+const text=document.createElement("span");
+text.textContent=mark;
+
+watermark.appendChild(text);
+wrapper.appendChild(watermark);
+
+$("pages").appendChild(wrapper);
+
+await page.render({
+canvasContext:context,
+viewport
+}).promise;
+}
+}catch(e){
+if(generation===viewerGeneration){
+message("PDF viewer error: "+errorText(e));
+closeViewer();
+}
+}
+}
+
+function closeViewer(){
+viewerGeneration++;
+if(currentPdf){
+currentPdf.destroy().catch(()=>{});
+currentPdf=null;
+}
+$("viewer").classList.add("hidden");
+$("pages").replaceChildren();
+document.body.style.overflow="";
+}
+
+$("loginForm").addEventListener("submit",login);
+
+window.logout=logout;
 window.loadStudents=loadStudents;
+window.loadFiles=loadFiles;
+window.changeApproval=changeApproval;
+window.uploadPDF=uploadPDF;
+window.deletePDF=deletePDF;
+window.openPDF=openPDF;
+window.closeViewer=closeViewer;
 
+document.addEventListener("contextmenu",event=>{
+if(!$("viewer").classList.contains("hidden"))
+event.preventDefault();
+});
 
-async function changeApproval(id, approved) {
-  if (!confirm(
-    approved
-      ? "Approve this student?"
-      : "Revoke this student's access?"
-  )) {
-    return;
-  }
-
-  const { error } = await db.rpc(
-    "ayurtech_set_student_approval",
-    {
-      target_user_id: id,
-      new_approval: approved
-    }
-  );
-
-  if (error) {
-    message("Approval failed: " + error.message);
-    return;
-  }
-
-  message("Student access updated.");
-  await loadStudents();
+document.addEventListener("keydown",event=>{
+if(!$("viewer").classList.contains("hidden")&&
+(event.ctrlKey||event.metaKey)&&
+["s","p"].includes(event.key.toLowerCase())){
+event.preventDefault();
 }
- 
+});
 
 await loadProfile();
 </script>
