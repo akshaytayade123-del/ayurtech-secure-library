@@ -1,18 +1,240 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-  <title>AYURTECH Secure Library</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AYURTECH Secure Library</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;
+background:#08162b;color:#fff}
+header{padding:22px;text-align:center;
+background:#102b50;border-bottom:2px solid #d5ad56}
+header h1{font-size:23px;margin:0;color:#f3cf78}
+header p{margin:8px 0 0;color:#cbd5e1}
+main{max-width:520px;margin:35px auto;padding:16px}
+.card{background:#142743;border:1px solid #345071;
+border-radius:16px;padding:24px;margin-bottom:18px}
+h2{margin-top:0;font-size:21px}
+input{width:100%;padding:14px;margin:9px 0;
+border:1px solid #66809d;border-radius:8px;
+background:#fff;color:#111;font-size:16px}
+button{padding:13px 16px;border:0;border-radius:8px;
+background:#d5ad56;color:#101827;font-weight:bold;
+cursor:pointer;margin:6px 5px 6px 0}
+button:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:#345071;color:white}
+.danger{background:#d95b5b;color:white}
+.hidden{display:none}
+.notice{padding:12px;border-radius:8px;
+background:#243b5b;margin:12px 0;overflow-wrap:anywhere}
+.student{padding:14px;border:1px solid #45617f;
+border-radius:10px;margin:12px 0}
+.small{font-size:13px;color:#cbd5e1}
+footer{text-align:center;color:#aabbd0;padding:25px}
+</style>
 </head>
 <body>
-  <h1>AYURTECH GUIDENCE CELL</h1>
-  <h2>Secure Student Library</h2>
-  <p>Welcome to AYURTECH.</p>
-  <p>Student login and protected PDF access
-     are coming soon.</p>
+
+<header>
+<h1>AYURTECH GUIDENCE CELL</h1>
+<p>Secure Student Library</p>
+</header>
+
+<main>
+<section id="loginPanel" class="card">
+<h2>Secure Login</h2>
+<p>For AYURTECH Admin and Registered Students</p>
+<form id="loginForm">
+<input id="email" type="email"
+placeholder="Email address" autocomplete="email" required>
+<input id="password" type="password"
+placeholder="Password" autocomplete="current-password" required>
+<button id="loginButton" type="submit">Login</button>
+</form>
+<div id="loginMessage" class="notice hidden"></div>
+<p class="small">Only approved students can access the library.</p>
+</section>
+
+<section id="pendingPanel" class="card hidden">
+<h2>Approval Pending</h2>
+<p>Your account is registered but not yet approved.</p>
+<p>Contact AYURTECH administration for access.</p>
+<button class="secondary" onclick="logout()">Logout</button>
+</section>
+
+<section id="adminPanel" class="card hidden">
+<h2>Admin Dashboard</h2>
+<p>Student Approval Management</p>
+<button onclick="loadStudents()">Refresh Students</button>
+<button class="secondary" onclick="logout()">Logout</button>
+<div id="studentList"></div>
+</section>
+
+<section id="studentPanel" class="card hidden">
+<h2>Student Library</h2>
+<p>Welcome to AYURTECH Secure Library.</p>
+<div class="notice">
+Your account is approved.
+Private PDF viewing will be added next.
+</div>
+<button class="secondary" onclick="logout()">Logout</button>
+</section>
+
+<div id="status" class="notice hidden"
+role="status" aria-live="polite"></div>
+</main>
+
+<footer>Prepared by AYURTECH GUIDENCE CELL</footer>
+
+<script type="module">
+import {createClient} from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const URL="https://jftrsedbbbnudioxqjpy.supabase.co";
+const KEY="sb_publishable_4f7dC6tci0ewD0JHsrNjDQ_pg44uhYV";
+const db=createClient(URL,KEY);
+
+const $=id=>document.getElementById(id);
+let currentUser=null;
+
+function show(panel){
+ ["loginPanel","pendingPanel","adminPanel","studentPanel"]
+ .forEach(id=>$(id).classList.add("hidden"));
+ $(panel).classList.remove("hidden");
+}
+
+function message(text){
+ $("status").textContent=text;
+ $("status").classList.remove("hidden");
+}
+
+async function loadProfile(){
+ const {data:{user},error:userError}=await db.auth.getUser();
+ if(userError || !user){
+   currentUser=null;
+   show("loginPanel");
+   return;
+ }
+ currentUser=user;
+
+ const {data:p,error}=await db.from("profiles")
+ .select("role,approved")
+ .eq("id",user.id).single();
+
+ if(error || !p){
+   show("pendingPanel");
+   message("Profile could not be verified. Contact admin.");
+   return;
+ }
+
+ if(p.role==="admin" && p.approved===true){
+   show("adminPanel");
+   await loadStudents();
+ }else if(p.role==="student" && p.approved===true){
+   show("studentPanel");
+ }else{
+   show("pendingPanel");
+ }
+}
+
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ $("loginButton").disabled=true;
+ $("loginMessage").classList.add("hidden");
+
+ const {error}=await db.auth.signInWithPassword({
+  email:$("email").value.trim(),
+  password:$("password").value
+ });
+
+ $("loginButton").disabled=false;
+ if(error){
+   $("loginMessage").textContent=error.message;
+   $("loginMessage").classList.remove("hidden");
+   return;
+ }
+ $("password").value="";
+ await loadProfile();
+});
+
+async function logout(){
+ await db.auth.signOut();
+ currentUser=null;
+ show("loginPanel");
+ $("status").classList.add("hidden");
+}
+window.logout=logout;
+
+async function loadStudents(){
+ const {data,error}=await db.from("profiles")
+ .select("id,role,approved")
+ .eq("role","student")
+ .order("id");
+
+ const list=$("studentList");
+ list.replaceChildren();
+
+ if(error){
+  message("Unable to load students: "+error.message);
+  return;
+ }
+
+ if(!data || data.length===0){
+  list.textContent="No students found.";
+  return;
+ }
+
+ for(const student of data){
+  const card=document.createElement("div");
+  card.className="student";
+
+  const label=document.createElement("p");
+  label.textContent="Student ID: "+student.id;
+
+  const state=document.createElement("p");
+  state.textContent=student.approved?
+   "Status: Approved":"Status: Pending";
+
+  const button=document.createElement("button");
+  button.textContent=student.approved?
+   "Revoke Access":"Approve Student";
+  if(student.approved)button.className="danger";
+
+  button.onclick=()=>changeApproval(
+   student.id,!student.approved
+  );
+
+  card.append(label,state,button);
+  list.appendChild(card);
+ }
+}
+window.loadStudents=loadStudents;
+
+async function changeApproval(id,approved){
+ if(!confirm(approved?
+   "Approve this student?":"Revoke this student's access?")){
+   return;
+ }
+
+ const {error}=await db.rpc(
+  "ayurtech_set_student_approval",{
+   p_student_id:id,
+   p_approved:approved
+  }
+ );
+
+ if(error){
+  message("Approval failed: "+error.message+
+  ". Verify the RPC parameter names.");
+  return;
+ }
+
+ message("Student access updated.");
+ await loadStudents();
+}
+
+await loadProfile();
+</script>
 </body>
 </html>
-  
