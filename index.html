@@ -479,6 +479,7 @@ const availableWidth=Math.min(
 window.innerWidth-24,850
 );
 
+
 const scale=Math.min(2,availableWidth/base.width);
 const viewport=page.getViewport({scale});
 
@@ -488,15 +489,28 @@ wrapper.className="page";
 const canvas=document.createElement("canvas");
 const context=canvas.getContext("2d");
 
-canvas.width=Math.floor(viewport.width);
-canvas.height=Math.floor(viewport.height);
+const resolution=Math.min(
+  window.devicePixelRatio*2,
+  3
+);
 
+canvas.width=Math.floor(viewport.width*resolution);
+canvas.height=Math.floor(viewport.height*resolution);
+
+canvas.style.width=viewport.width+"px";
+canvas.style.height=viewport.height+"px";
+  
+canvas.height=Math.floor(viewport.height);
+  
 wrapper.appendChild(canvas);
 
-const watermark=document.createElement("div");
-watermark.className="watermark";
 
-const text=document.createElement("span");
+await page.render({
+  canvasContext:context,
+  viewport,
+  transform:[resolution,0,0,resolution,0,0]
+}).promise;
+  
 text.textContent=mark;
 
 watermark.appendChild(text);
