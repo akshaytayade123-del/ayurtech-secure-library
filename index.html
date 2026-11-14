@@ -500,17 +500,13 @@ canvas.height=Math.floor(viewport.height*resolution);
 canvas.style.width=viewport.width+"px";
 canvas.style.height=viewport.height+"px";
   
-canvas.height=Math.floor(viewport.height);
-  
+
 wrapper.appendChild(canvas);
 
+const watermark=document.createElement("div");
+watermark.className="watermark";
 
-await page.render({
-  canvasContext:context,
-  viewport,
-  transform:[resolution,0,0,resolution,0,0]
-}).promise;
-  
+const text=document.createElement("span");
 text.textContent=mark;
 
 watermark.appendChild(text);
@@ -519,9 +515,11 @@ wrapper.appendChild(watermark);
 $("pages").appendChild(wrapper);
 
 await page.render({
-canvasContext:context,
-viewport
+  canvasContext:context,
+  viewport:viewport,
+  transform:[resolution,0,0,resolution,0,0]
 }).promise;
+  
 }
 }catch(e){
 if(generation===viewerGeneration){
