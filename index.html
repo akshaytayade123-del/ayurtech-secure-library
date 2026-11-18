@@ -566,5 +566,62 @@ event.preventDefault();
 
 await loadProfile();
 </script>
+  
+<!-- AYURTECH FOUNDER PROFILE -->
+<style>
+.ayurtech-founder {
+  background: linear-gradient(135deg,#071b38,#143c68);
+  border: 1px solid #d7b76c;
+  border-radius: 18px;
+  padding: 20px;
+  margin: 18px auto;
+  max-width: 950px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: white;
+  box-shadow: 0 8px 25px #0002;
+}
+.ayurtech-founder img {
+  width: 125px;
+  height: 145px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 3px solid #d7b76c;
+}
+.ayurtech-founder h2 {
+  color: #f2d58a;
+  margin: 5px 0;
+}
+@media(max-width:600px) {
+  .ayurtech-founder {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+</style>
+
+<script>
+(function () {
+  const founder = document.createElement("section");
+  founder.className = "ayurtech-founder";
+  founder.innerHTML = `
+    <img src="AYURTECH_Founder_Portrait.jpg"
+         alt="Founder photograph">
+    <div>
+      <small>FOUNDER & COUNSELLING DIRECTOR</small>
+      <h2>Dr. Akshay Tayade</h2>
+      <p>BAMS, MS (Shalyatantra)</p>
+      <strong>AYURTECH GUIDENCE CELL</strong>
+    </div>
+  `;
+
+  const target = document.querySelector("main");
+  if (target) {
+    target.prepend(founder);
+  }
+})();
+</script>
+  
 </body>
 </html>
